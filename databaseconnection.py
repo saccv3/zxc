@@ -4,6 +4,7 @@ import psycopg2
 class DatabaseConnection:
     __connection = ''
 
+    # init method was creating connect to database
     def __init__(self, host, user, password, db_name):
         self.__connection = psycopg2.connect(
             host=host,
@@ -14,26 +15,27 @@ class DatabaseConnection:
 
         self.__connection.autocommit = True
 
-        print("[INFO] Соединение с базой данных установленно. ")
+        print("[INFO] PostgresSQL connection was activate ")
 
+    # method for a put some data into data table
     def put_data_user_table(self, *args):
         with self.__connection.cursor() as cursor:
-            text = ','.join(args)
             cursor.execute(
-                f"INSERT INTO bot_users(name_user, email_user, phone_number_user, uniq_chat_id) values(%s, %s, %s, %s);",
+                f"INSERT INTO bot_users(phone_number, chat_id) values(%s, %s);",
                 (
-                    args[0],
-                    args[1],
-                    args[2],
-                    args[3]
+                    args[0]['user_phone_contact'],
+                    str(args[0]['user_chat_id'])
                  )
             )
             print('[INFO] DATA PUT INTO DATABASE')
 
-    def drop_data_into_tables(self, param):
+        return True # return True To understand the correct data entry
+
+    # method delete some tables
+    def drop_data_into_tables(self, chat_id):
         with self.__connection.cursor() as cursor:
             cursor.execute(
-                "DELETE FROM user_list WHERE email='%s';", (param)
+                f"DELETE FROM bot_users WHERE chat_id='{chat_id}';",
             )
 
             print('[INFO] Data into table was dropped')
@@ -56,24 +58,29 @@ class DatabaseConnection:
                 print(f'[INFO] Your email is correctable \n')
                 return True
 
-    # method return object connection
-    def get_connection(self):
-        return self.__connection
-
-    # method for a close a connection
-    def close_connection(self):
-        if self.__connection:
-            self.__connection.close()
-            print('[INFO] PostgresSQL connection closed \n')
-
     # method for a get database tables, use args
     def get_table_content(self, *args):
         with self.__connection.cursor() as cursor:
-            text = ' ,'.join(args[0])
+            text = ' ,'.join(args)
             cursor.execute(
                 f"SELECT {text if len(text) > 0 else text.__add__('*')} FROM bot_users;"
             )
+            print(cursor.fetchall())
             return cursor.fetchall()
+
+    def find_table_content(self, chat_id):
+        boola = True
+        with self.__connection.cursor() as cursor:
+            # text = ' ,'.join(args)
+            cursor.execute(
+                f"SELECT * FROM bot_users WHERE chat_id='{chat_id}';"
+            )
+            boola = not cursor.fetchall()
+            print('[INFO] Data successfully found')
+
+        print(boola)
+        return not (not cursor.fetchall())
+
 
     # method return version PostgresDataBase
     def get_version(self):
@@ -83,3 +90,13 @@ class DatabaseConnection:
             )
             print(f'{cursor.fetchone()}')
             return cursor.fetchone()
+
+    # method return object connection
+    def get_connection(self):
+        return self.__connection
+
+    # method for a close a connection
+    def close_connection(self):
+        if self.__connection:
+            self.__connection.close()
+            print('[INFO] PostgresSQL connection closed \n')

@@ -1,17 +1,33 @@
 from aiogram import types, Dispatcher
 from custom_keyboard import keyb
+from createbot import bot
+
+from custom_keyboard import keyb
+from databaseconnection import DatabaseConnection
+from config import host, db_name, password, user
+
+
+database = ''
 
 
 async def begin_tell(message: types.Message):
     if message.from_user.id == message.chat.id:
-        await message.answer(
-            f"<b>Доброго времени суток! {message.from_user.first_name}</b>\n\n" +
-            "Мы поможем зарегистрировать твой аккаунт у нас на сайте, а также:\n" +
-            "* Позволим удобно получать персональные данные.\n" +
-            "* Сохранять документы и скачивать их.\n" +
-            "* Быстро и удобно связываться с преподавателями.\n",
-            reply_markup=keyb.main_menu,
-            parse_mode=types.ParseMode.HTML)
+        if user_was_reg(message):
+            await message.answer(
+                f"<b>Доброго времени суток! {message.from_user.first_name}</b>\n\n" +
+                "Мы поможем зарегистрировать твой аккаунт у нас на сайте, а также:\n" +
+                "* Позволим удобно получать персональные данные.\n" +
+                "* Сохранять документы и скачивать их.\n" +
+                "* Быстро и удобно связываться с преподавателями.\n",
+                reply_markup=keyb.main_menu,
+                parse_mode=types.ParseMode.HTML)
+        else:
+            await message.answer(
+                f"<b>Доброго времени суток! {message.from_user.first_name}</b>\n\n" +
+                "Выберите пункт настроек, чтобы продолжить работу: \n" +
+                "* Рассылки \n" +
+                "* Личные сообщения \n",
+                parse_mode=types.ParseMode.HTML)
 
         print(message)
     else:
@@ -19,6 +35,27 @@ async def begin_tell(message: types.Message):
             'Для продолжения диалога напишите боту в личные сообщения..',
             reply_markup=keyb.sub_menu
         )
+
+
+def user_was_reg(message):
+    global database
+
+    try:
+        database = DatabaseConnection(
+            host=host,
+            user=user,
+            password=password,
+            db_name=db_name
+        )
+
+        # boola = not database.find_table_content(message.from_user.id)
+        # print(f'{boola} blyad try except')
+        return not database.find_table_content(message.from_user.id)
+    except Exception as exc:
+        print(f'[INFO] PostgresSQL auth error, {exc}')
+        return False
+    finally:
+        print('[INFO] PostgresSQL connection closed')
 
 
 def basic_handlers_register(dp: Dispatcher):
