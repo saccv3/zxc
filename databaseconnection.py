@@ -1,6 +1,7 @@
 import psycopg2
 
 
+# class for create connect to database, a little api.. :))))
 class DatabaseConnection:
     __connection = ''
 
@@ -31,7 +32,7 @@ class DatabaseConnection:
 
         return True # return True To understand the correct data entry
 
-    # method delete some tables
+    # method delete some rows
     def drop_data_into_tables(self, chat_id):
         with self.__connection.cursor() as cursor:
             cursor.execute(
@@ -79,8 +80,7 @@ class DatabaseConnection:
             print('[INFO] Data successfully found')
 
         print(boola)
-        return not (not cursor.fetchall())
-
+        return not (boola)
 
     # method return version PostgresDataBase
     def get_version(self):

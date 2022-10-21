@@ -12,11 +12,13 @@ from config import host, db_name, password, user
 database = ''
 
 
+# main class FSM machine
 class UserBot(StatesGroup):
     user_phone_contact = State()
     user_chat_id = ''
 
 
+# callback function for user register in database
 async def begin_reg(call_back: types.CallbackQuery):
     await call_back.message.answer(
         "Для регистрации пользователя необходимо отправить номер телефона",
@@ -26,6 +28,7 @@ async def begin_reg(call_back: types.CallbackQuery):
     await UserBot.next()
 
 
+# function set variables phone and chat_id values
 async def put_phone_user(message: types.Contact, state: FSMContext):
     async with state.proxy() as data:
         data['user_phone_contact'] = message.contact.phone_number
@@ -33,8 +36,8 @@ async def put_phone_user(message: types.Contact, state: FSMContext):
 
     print(data)
 
-    if create_database_connection(data):
-        bot.send_message(
+    if create_database_connection(data): # query
+        await bot.send_message(
             message.contact.user_id,
             f'Регистрация прошла успешно! Спасибо, {message.contact.first_name}'
         )
@@ -42,6 +45,7 @@ async def put_phone_user(message: types.Contact, state: FSMContext):
     await state.finish()
 
 
+# function for exit in FSM state
 async def cancel_handler(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
 
@@ -52,6 +56,7 @@ async def cancel_handler(message: types.Message, state: FSMContext):
     await message.reply('Ок!')
 
 
+# function create database connect and contains query
 def create_database_connection(data):
     global database
 
@@ -64,14 +69,16 @@ def create_database_connection(data):
         )
 
         database.put_data_user_table(data)
-
+        return True
     except Exception as exc:
         print(f'[INFO] PostgresSQL registration error, {exc}')
+        return False
     finally:
         if database.get_connection():
             database.close_connection()
 
 
+# function for a registered other function's and callback method's
 def reg_handlers_register(dp: Dispatcher):
     dp.register_callback_query_handler(begin_reg, text='reg_user', state=None)
     dp.register_message_handler(put_phone_user, content_types=['contact'], state=UserBot.user_phone_contact)

@@ -6,13 +6,14 @@ from custom_keyboard import keyb
 from databaseconnection import DatabaseConnection
 from config import host, db_name, password, user
 
+database = '' # global variable for a save base connect object
 
-database = ''
 
-
+# method called when writing the /start option
+# The method sends the primary form to the user depending on whether the user is logged in or not.
 async def begin_tell(message: types.Message):
     if message.from_user.id == message.chat.id:
-        if user_was_reg(message):
+        if user_was_reg(message):  # database query to find the user
             await message.answer(
                 f"<b>Доброго времени суток! {message.from_user.first_name}</b>\n\n" +
                 "Мы поможем зарегистрировать твой аккаунт у нас на сайте, а также:\n" +
@@ -37,8 +38,10 @@ async def begin_tell(message: types.Message):
         )
 
 
+# database query to find the user
+# A one-time connection is created in the database and closed when the function body is executed
 def user_was_reg(message):
-    global database
+    global database # global variable for a content database object
 
     try:
         database = DatabaseConnection(
@@ -50,7 +53,7 @@ def user_was_reg(message):
 
         # boola = not database.find_table_content(message.from_user.id)
         # print(f'{boola} blyad try except')
-        return not database.find_table_content(message.from_user.id)
+        return not database.find_table_content(message.from_user.id)  # query
     except Exception as exc:
         print(f'[INFO] PostgresSQL auth error, {exc}')
         return False
@@ -58,5 +61,6 @@ def user_was_reg(message):
         print('[INFO] PostgresSQL connection closed')
 
 
+# function for a registered other function's and callback method's
 def basic_handlers_register(dp: Dispatcher):
     dp.register_message_handler(begin_tell, commands=['start'])
