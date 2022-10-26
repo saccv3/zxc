@@ -7,6 +7,7 @@ from createbot import bot
 from custom_keyboard import keyb
 from databaseconnection import DatabaseConnection
 from config import host, db_name, password, user
+from handlers.basic_handlers import help_information
 
 
 database = ''
@@ -78,9 +79,17 @@ def create_database_connection(data):
             database.close_connection()
 
 
+async def send_contacts(call_back: types.CallbackQuery):
+    await call_back.message.answer(
+        help_information(),
+        parse_mode=types.ParseMode.HTML
+    )
+
+
 # function for a registered other function's and callback method's
 def reg_handlers_register(dp: Dispatcher):
     dp.register_callback_query_handler(begin_reg, text='reg_user', state=None)
     dp.register_message_handler(put_phone_user, content_types=['contact'], state=UserBot.user_phone_contact)
     dp.register_message_handler(cancel_handler, state="*", commands='выход')
     dp.register_message_handler(cancel_handler, Text(equals='выход', ignore_case=True), state="*")
+    dp.register_callback_query_handler(send_contacts, text='contacts')

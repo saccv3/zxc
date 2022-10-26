@@ -70,17 +70,34 @@ class DatabaseConnection:
             return cursor.fetchall()
 
     def find_table_content(self, chat_id):
-        boola = True
+        found = True
         with self.__connection.cursor() as cursor:
             # text = ' ,'.join(args)
             cursor.execute(
                 f"SELECT * FROM bot_users WHERE chat_id='{chat_id}';"
             )
-            boola = not cursor.fetchall()
+            found = not cursor.fetchall()
             print('[INFO] Data successfully found')
 
-        print(boola)
-        return not (boola)
+        print(found)
+        return not found
+
+    def update_data(self, chat_id):
+        data = False
+        with self.__connection.cursor() as cursor:
+            cursor.execute(
+                f"SELECT send_inform FROM bot_users WHERE chat_id='{chat_id}'"
+            )
+
+            data = cursor.fetchone()
+
+        with self.__connection.cursor() as cursor:
+            cursor.execute(
+                f"UPDATE bot_users SET send_inform = {not data[0]} WHERE chat_id='{chat_id}'"
+            )
+            print(f'[INFO] References is {not data[0]}')
+
+        return not data[0]
 
     # method return version PostgresDataBase
     def get_version(self):

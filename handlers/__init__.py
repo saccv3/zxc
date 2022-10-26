@@ -1,1 +1,1 @@
-from handlers import basic_handlers, reg_handlers
+from handlers import basic_handlers, reg_handlers, auth_handlers

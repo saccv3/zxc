@@ -23,11 +23,13 @@ async def begin_tell(message: types.Message):
                 reply_markup=keyb.main_menu,
                 parse_mode=types.ParseMode.HTML)
         else:
-            await message.answer(
+            await message.reply(
                 f"<b>Доброго времени суток! {message.from_user.first_name}</b>\n\n" +
-                "Выберите пункт настроек, чтобы продолжить работу: \n" +
-                "* Рассылки \n" +
-                "* Личные сообщения \n",
+                "<b>Помощь:</b> \n" +
+                "/help - получить контактные данные \n\n" +
+                "<b>Рассылка:</b>\n" +
+                "/message_chat - Сообщения от пользователей \n" +
+                "/reference {:>5s}\n".format("- Рассылка новостей"),
                 parse_mode=types.ParseMode.HTML)
 
         print(message)
@@ -61,6 +63,23 @@ def user_was_reg(message):
         print('[INFO] PostgresSQL connection closed')
 
 
+async def send_help(msg: types.Message):
+    await msg.reply(
+        help_information(),
+        parse_mode=types.ParseMode.HTML
+    )
+
+
+def help_information():
+    return "<b>Костанайский инженерно-экономический университет им. М. Дулатова</b> \n \n" + \
+           "<b>Адрес</b> \n" \
+           + "Улица Чернышевского 59, Костанай 110000, Казахстан \n\n" + \
+           "<b>Телефон</b> \n" + \
+           "+7 777 581 5509 \n\n"
+
+
 # function for a registered other function's and callback method's
 def basic_handlers_register(dp: Dispatcher):
     dp.register_message_handler(begin_tell, commands=['start'])
+    dp.register_message_handler(send_help, commands=['help'])
+
