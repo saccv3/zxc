@@ -6,7 +6,6 @@ sub_menu = InlineKeyboardMarkup(row_width=1)
 auth_key_kb = InlineKeyboardMarkup(row_width=1)
 main_menu = InlineKeyboardMarkup(row_width=2)
 
-
 bt5 = KeyboardButton('Отравить свой контакт', request_contact=True)
 phone_number_kb.row(bt5)
 
@@ -19,3 +18,15 @@ data_btn = InlineKeyboardButton(text='Контакты', callback_data='contacts
 main_menu.add(reg_btn, data_btn)
 sub_menu.add(inl_btn)
 auth_key_kb.add(ref_btn, phone_btn)
+
+# admin
+
+admin_kb = InlineKeyboardMarkup(row_width=1).row(
+    (
+        InlineKeyboardButton(text='Рассылка', callback_data='ref_start')),
+    InlineKeyboardButton(text='Сообщения', callback_data='message_start')
+)
+
+# accept_kb = InlineKeyboardMarkup(row_width=1).row(
+#     InlineKeyboardButton(text='Отправить', callback_data='accept')
+# )

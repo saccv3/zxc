@@ -1,12 +1,9 @@
 from aiogram import types, Dispatcher
 from custom_keyboard import keyb
-from createbot import bot
-
-from custom_keyboard import keyb
 from databaseconnection import DatabaseConnection
 from config import host, db_name, password, user
 
-database = '' # global variable for a save base connect object
+database = ''  # global variable for a save base connect object
 
 
 # method called when writing the /start option
@@ -23,14 +20,18 @@ async def begin_tell(message: types.Message):
                 reply_markup=keyb.main_menu,
                 parse_mode=types.ParseMode.HTML)
         else:
-            await message.reply(
-                f"<b>Доброго времени суток! {message.from_user.first_name}</b>\n\n" +
-                "<b>Помощь:</b> \n" +
-                "/help - получить контактные данные \n\n" +
-                "<b>Рассылка:</b>\n" +
-                "/message_chat - Сообщения от пользователей \n" +
-                "/reference {:>5s}\n".format("- Рассылка новостей"),
-                parse_mode=types.ParseMode.HTML)
+            if str(message.chat.id) == "716316719":
+                await message.answer("Лорд вы у руля.",
+                                     reply_markup=keyb.admin_kb)
+            else:
+                await message.reply(
+                    f"<b>Доброго времени суток! {message.from_user.first_name}</b>\n\n" +
+                    "<b>Помощь:</b> \n" +
+                    "/help - получить контактные данные \n\n" +
+                    "<b>Рассылка:</b>\n" +
+                    "/message_chat - Сообщения от пользователей \n" +
+                    "/reference {:>5s}\n".format("- Рассылка новостей"),
+                    parse_mode=types.ParseMode.HTML)
 
         print(message)
     else:
@@ -40,10 +41,35 @@ async def begin_tell(message: types.Message):
         )
 
 
+# return help_information on /help message
+async def send_help(msg: types.Message):
+    await msg.reply(
+        help_information(),
+        parse_mode=types.ParseMode.HTML
+    )
+
+
+# def with help content
+def help_information():
+    return "<b>Костанайский инженерно-экономический университет им. М. Дулатова</b> \n \n" + \
+           "<b>Адрес</b> \n" \
+           + "Улица Чернышевского 59, Костанай 110000, Казахстан \n\n" + \
+           "<b>Телефон</b> \n" + \
+           "+7 777 581 5509 \n\n"
+
+
+# async def some_handlers(msg: types.Message):
+#     if msg.caption:
+#         print(msg.photo[-1].file_id)
+
+
+# _________________________________DATABASE CONNECTION________________________________#
+
+
 # database query to find the user
 # A one-time connection is created in the database and closed when the function body is executed
 def user_was_reg(message):
-    global database # global variable for a content database object
+    global database  # global variable for a content database object
 
     try:
         database = DatabaseConnection(
@@ -53,33 +79,16 @@ def user_was_reg(message):
             db_name=db_name
         )
 
-        # boola = not database.find_table_content(message.from_user.id)
-        # print(f'{boola} blyad try except')
         return not database.find_table_content(message.from_user.id)  # query
     except Exception as exc:
-        print(f'[INFO] PostgresSQL auth error, {exc}')
+        print(f'[INFO] Произошла ошибка во время поиска данных в таблице, {exc}')
         return False
     finally:
-        print('[INFO] PostgresSQL connection closed')
-
-
-async def send_help(msg: types.Message):
-    await msg.reply(
-        help_information(),
-        parse_mode=types.ParseMode.HTML
-    )
-
-
-def help_information():
-    return "<b>Костанайский инженерно-экономический университет им. М. Дулатова</b> \n \n" + \
-           "<b>Адрес</b> \n" \
-           + "Улица Чернышевского 59, Костанай 110000, Казахстан \n\n" + \
-           "<b>Телефон</b> \n" + \
-           "+7 777 581 5509 \n\n"
+        print('[INFO] PostgresSQL подключение закрыто.')
 
 
 # function for a registered other function's and callback method's
 def basic_handlers_register(dp: Dispatcher):
     dp.register_message_handler(begin_tell, commands=['start'])
     dp.register_message_handler(send_help, commands=['help'])
-
+    # dp.register_message_handler(some_handlers, content_types=['photo'])

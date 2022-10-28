@@ -16,7 +16,7 @@ class DatabaseConnection:
 
         self.__connection.autocommit = True
 
-        print("[INFO] PostgresSQL connection was activate ")
+        print("[INFO] PostgresSQL подключение к базе данных установлено ")
 
     # method for a put some data into data table
     def put_data_user_table(self, *args):
@@ -28,7 +28,7 @@ class DatabaseConnection:
                     str(args[0]['user_chat_id'])
                  )
             )
-            print('[INFO] DATA PUT INTO DATABASE')
+            print('[INFO] Данные занесены в таблицу')
 
         return True # return True To understand the correct data entry
 
@@ -39,7 +39,7 @@ class DatabaseConnection:
                 f"DELETE FROM bot_users WHERE chat_id='{chat_id}';",
             )
 
-            print('[INFO] Data into table was dropped')
+            print(f'[INFO] Данные пользователя chat_id={chat_id}, были удалены')
 
     # method for a checked correctable email adress
     def condition_data_put(self, some_email):
@@ -50,13 +50,13 @@ class DatabaseConnection:
 
             for el in cursor.fetchall():
                 if some_email.find('@') == -1:
-                    print(f"[INFO] {some_email} that is a not email \n")
+                    print(f"[INFO] {some_email} это не почта! \n")
                     return False
                 elif some_email == el[0]:
-                    print("[INFO] your mail already exists \n")
+                    print("[INFO] Ваша почта уже используется \n")
                     return False
             else:
-                print(f'[INFO] Your email is correctable \n')
+                print(f'[INFO] Ваша почта введена корректно \n')
                 return True
 
     # method for a get database tables, use args
@@ -77,10 +77,17 @@ class DatabaseConnection:
                 f"SELECT * FROM bot_users WHERE chat_id='{chat_id}';"
             )
             found = not cursor.fetchall()
-            print('[INFO] Data successfully found')
+            print(f'[INFO] Данные пользователя {chat_id}, успешно найдены.')
 
         print(found)
         return not found
+
+    def mailing_start(self):
+        with self.__connection.cursor() as cursor:
+            cursor.execute(
+                f"SELECT chat_id FROM bot_users WHERE send_inform='True'"
+            )
+            return cursor.fetchall()
 
     def update_data(self, chat_id):
         data = False
@@ -95,7 +102,7 @@ class DatabaseConnection:
             cursor.execute(
                 f"UPDATE bot_users SET send_inform = {not data[0]} WHERE chat_id='{chat_id}'"
             )
-            print(f'[INFO] References is {not data[0]}')
+            print(f'[INFO] Рассылка для пользователя chat_id={chat_id}, теперь {not data[0]}')
 
         return not data[0]
 
@@ -116,4 +123,4 @@ class DatabaseConnection:
     def close_connection(self):
         if self.__connection:
             self.__connection.close()
-            print('[INFO] PostgresSQL connection closed \n')
+            print('[INFO] PostgresSQL подключение закрыто. \n')

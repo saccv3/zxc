@@ -40,8 +40,16 @@ async def put_phone_user(message: types.Contact, state: FSMContext):
     if create_database_connection(data): # query
         await bot.send_message(
             message.contact.user_id,
-            f'Регистрация прошла успешно! Спасибо, {message.contact.first_name}'
+            f'Регистрация прошла успешно! Спасибо, {message.contact.first_name} \n\n\n'
         )
+
+        await message.reply(
+            "<b>Помощь:</b> \n" +
+            "/help - получить контактные данные \n\n" +
+            "<b>Рассылка:</b>\n" +
+            "/message_chat - Сообщения от пользователей \n" +
+            "/reference {:>5s}\n".format("- Рассылка новостей"),
+            parse_mode=types.ParseMode.HTML)
 
     await state.finish()
 
@@ -55,6 +63,16 @@ async def cancel_handler(message: types.Message, state: FSMContext):
 
     await state.finish()
     await message.reply('Ок!')
+
+
+async def send_contacts(call_back: types.CallbackQuery):
+    await call_back.message.answer(
+        help_information(),
+        parse_mode=types.ParseMode.HTML
+    )
+
+
+# _________________________________DATABASE CONNECTION________________________________#
 
 
 # function create database connect and contains query
@@ -72,18 +90,11 @@ def create_database_connection(data):
         database.put_data_user_table(data)
         return True
     except Exception as exc:
-        print(f'[INFO] PostgresSQL registration error, {exc}')
+        print(f'[INFO] PostgresSQL ошибка регистрации пользователя, {exc}')
         return False
     finally:
         if database.get_connection():
             database.close_connection()
-
-
-async def send_contacts(call_back: types.CallbackQuery):
-    await call_back.message.answer(
-        help_information(),
-        parse_mode=types.ParseMode.HTML
-    )
 
 
 # function for a registered other function's and callback method's
